@@ -1,0 +1,455 @@
+:root {
+    font-size: 16px;
+    font-family: Helvetica, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    text-decoration:none;
+}
+
+body {
+    --bg1: #1D1D1D;
+    --bg2: #181818;
+    --grey1: #909096;
+    --accent: #0087D7;
+    --shadow-color: black;
+    --themeTog-color: #E6E6E6;
+    --text-color1: #D6D6D6;
+    --text-color2: var(--grey1);
+    --nav-thickness: 60px;
+    --search-thickness: 800px;
+    color: var(--text-color);
+    transition: .2s;
+    background: var(--bg1);
+}
+
+body.light {
+    --bg1: #E6E6E6;
+    --bg2: #EFEFEF;
+    --grey1: #909096;
+    --accent: #0087D7;
+    --shadow-color: rgba(0, 0, 0, .3);
+    --themeTog-color: #1D1D1D;
+    --text-color1: #484848;
+    --text-color2: var(--grey1);
+    --nav-thickness: 60px;
+    --search-thickness: 800px;
+    color: var(--text-color);
+    transition: .2s;
+    background: var(--bg1);
+}
+
+#addClump {
+    /* display:none; */
+    margin-left: 100px;
+}
+#passPrompt {
+    display:none;
+}
+#svg-symbol {
+    display: none;
+}
+
+#navbar {
+    position: fixed;
+    height: 100vh;
+    width: var(--nav-thickness);
+    background-color: var(--bg2);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#navbar img {
+    width: 80%;
+}
+
+#navbar .nav-link {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: var(--nav-thickness);
+    margin-top: 2vh;
+}
+
+#navbar .nav-svg {
+    position: absolute;
+    width: 50%;
+    fill: var(--text-color1);
+    pointer-events: none;
+    transition: .5s;
+    height: 100%;
+}
+
+#navbar #themeTog .nav-svg {
+    fill: var(--themeTog-color);
+}
+
+#navbar #sync-link .nav-svg {
+    fill: var(--accent);
+}
+
+#navbar .nav-text {
+    position: absolute;
+    opacity: 0;
+    font-size: 1.5vh;
+    text-align: center;
+    color: var(--accent);
+    transition: .5s;
+}
+
+#navbar .nav-link:hover >.nav-svg {
+    fill: var(--accent);
+    opacity: 0;
+}
+
+#navbar .nav-link:hover >.nav-text {
+    opacity: 100%;
+}
+
+#search-bar {
+    font-size: 1vw;
+    display: flex;
+    flex-direction: row;
+    width: var(--search-thickness);
+    height: 3em;
+    position: fixed;
+    top: 2vw;
+    left: 50vw;
+    transform: translate(-50%, -200%);
+    z-index: 2;
+    box-shadow: 10px 10px 10px var(--shadow-color);
+    transition: .2s;
+}
+
+#search-bar input {
+    border: 4px solid var(--accent);
+    border-radius: .5rem;
+    background: var(--bg2);
+    font-size: 2em;
+    color: var(--text-color1);
+    width: 100%;
+    padding: .2em;
+}
+
+#clumps {
+    font-size: 1vw;
+    display:flex;
+    flex-wrap: wrap;
+    padding: 2em;
+    margin-left: var(--nav-thickness);
+    justify-content: center;
+}
+
+#clumps .clumpContainer {
+    margin: .5em;
+    border-radius: 5px;
+    padding: 1em 1em .5em 1em;
+    background-color: var(--bg2);
+    box-shadow: 2px 2px 2px var(--shadow-color);
+    transition: .2s;
+    min-height: 13em;
+}
+
+#clumps .clumpContainer:hover {
+    transform: scale(1.1);
+    background-color: var(--accent);
+    box-shadow: 10px 10px 10px var(--shadow-color);
+    z-index: 1; 		/*ensures clumpContainers are always behind the popup*/
+}
+
+#clumps .clumpContainer .previewContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#clumps .clumpContainer .previewContainer .imgLogo {
+    width: 10em;
+    border-radius: .5rem;
+    transition: .2s;
+    margin-bottom: auto;
+    margin-top: auto;
+}
+
+#clumps .clumpContainer .previewContainer h {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
+    width: 100%;
+    color: var(--text-color1);
+    padding-top: .5em;
+}
+
+#popup {
+    visibility: visible;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    top: 0;
+    z-index: 2; 		/*ensure that the popup is always infront of all clumpContainers*/
+}
+
+#clumpEditor {
+    font-size: 1vw;
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50em;
+    background: var(--bg1);
+    padding: 3% 5%;
+    border-radius: .5rem;
+    transform: translate(-50%, -50%);
+}
+
+#clumpEditor .editorHeader {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 20%;
+}
+
+#clumpEditor .editorHeader .imgLogo {
+    width: 15%;
+    border: 1px solid black;
+    border-radius: .5rem;
+}
+
+#clumpEditor .editorHeader input {
+    border: 2px solid var(--bg2);
+    border-radius: .2em;
+    background: var(--bg2);
+    width: 80%;
+    font-size: 5em;
+    color: var(--text-color1);
+    margin-left: .5em;
+    padding: .2em;
+}
+
+#clumpEditor .editorBody {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1em;
+}
+
+#clumpEditor .editorBody div {
+    display: flex;
+    flex-direction: row;
+    margin: .75vw;
+}
+
+#clumpEditor .editorBody div input {
+    margin-left: auto;
+    border: 2px solid var(--bg2);
+    border-radius: .5rem;
+    background: var(--bg2);
+    font-size: 2em;
+    color: var(--text-color1);
+    width: 18em;
+    padding: .2em;
+}
+
+#clumpEditor .editorBody div span {
+    color: var(--text-color1);
+    font-size: 2em;
+    padding-top: .5em;
+}
+
+.password-line input {
+    width: calc(18em - 10%) !important;
+}
+
+.password-line svg {
+    fill: var(--text-color1);
+    width: 10%;
+    height: 3em;
+    align-self: center;
+}
+
+.password-line svg:hover {
+    fill: var(--accent);
+}
+
+#clumpEditor .editorBody input:hover,
+  #clumpEditor .editorHeader input:hover {
+    border-color: var(--accent);
+}
+
+#clumpEditor .editorFooterButtons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    height: 10%;
+    margin-top: 1vw;
+}
+
+#clumpEditor .editorFooterButtons button {
+    border: 2px solid black;
+    border-radius: 1rem;
+    font-size: 2.1vw;
+    padding: 0 5vw;
+    margin: 0 1vw;
+    font-weight: bold;
+    background-color: var(--bg2);
+    transition: .05s;
+    color: var(--text-color1);
+}
+
+#clumpEditor .editorFooterButtons #saveClumpEdit {
+    background-color: var(--accent);
+    visibility: hidden;
+}
+
+#clumpEditor .editorFooterButtons #deleteClump {
+    background-color: red;
+    transform: translate(-45%, 0);
+}
+
+#clumpEditor .editorFooterButtons #closeEdit {
+    transform: translate(45%, 0);
+}
+
+#clumpEditor .editorFooterButtons button:hover {
+    border-color: var(--accent);
+}
+
+#clumpEditor .editorFooterButtons button:active {
+    filter: brightness(.7);
+    border-color: var(--accent);
+}
+
+#masterPassMenu {
+    font-size: 1vw;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50em;
+    background: var(--bg1);
+    padding: 3% 5%;
+    border-radius: .5rem;
+    transform: translate(-50%, -50%);
+    color: var(--text-color1);
+}
+
+#masterPassMenu h1 {
+    font-size: 3em;
+}
+
+#masterPassMenu h2 {
+    padding-bottom: 1em;
+    font-size: 2em;
+    color: var(--text-color2);
+    padding-top: .5em;
+}
+
+#masterPassInputDiv {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 2em;
+}
+
+#masterPassInputDiv input {
+    border: 2px solid var(--bg2);
+    border-radius: .5rem;
+    background: var(--bg2);
+    font-size: 3em;
+    color: var(--text-color1);
+    width: 14em;
+    padding: .2em;
+}
+
+#masterPassInputDiv input:hover {
+    border-color: var(--accent)
+}
+
+#masterPassInputDiv svg {
+    fill: var(--text-color1);
+    width: 10%;
+    max-height: 4em;
+    margin-left: 1em;
+    align-self:center;
+}
+
+#masterPassInputDiv svg:hover {
+    fill: var(--accent);
+}
+
+#masterPassMenu #why-link {
+    font-size: 1em;
+    margin-top: 2em;
+    align-self: center;
+}
+
+#masterPassMenu #why-link:hover {
+    color: var(--accent)
+}
+
+#masterPassMenu #submitMasterPass {
+    border: 2px solid black;
+    border-radius: 1rem;
+    font-size: 2.1vw;
+    padding: 0 5vw;
+    margin: 0 1vw;
+    font-weight: bold;
+    background-color: var(--bg2);
+    transition: .05s;
+    color: var(--text-color1);
+    align-self: center;
+    width: 10em;
+}
+
+#masterPassMenu #submitMasterPass:hover {
+    border-color: var(--accent)
+}
+
+@media (max-width: 1024px) {
+    #clumps {
+	font-size: 2vw;
+    }
+
+   #clumpEditor {
+	font-size: 1.5vw;
+    }
+}
+
+@media (max-width: 480px) {
+    #navbar {
+	height: var(--nav-thickness);
+	width: 100vw;
+	flex-direction: row;
+    }
+
+    #navbar .nav-top {
+	margin-left: .5em;
+    }
+
+    #navbar .nav-middle {
+	display: flex;
+	flex-direction: row;
+    }
+
+    #navbar .nav-link {
+	width: 2.5em;
+	margin: 0;
+    }
+
+    #clumps {
+	margin-left: 0;
+	padding-top: calc(var(--nav-thickness) + 2em);
+    }
+}
