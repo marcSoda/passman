@@ -12,7 +12,6 @@ var db *sql.DB
 //Init loads a database
 func Init() {
 	db, _ = loadDatabase("database/database.db")
-
 }
 
 //loadDatabase returns a sqlite database struct given a path
