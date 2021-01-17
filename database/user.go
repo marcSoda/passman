@@ -11,7 +11,6 @@ import (
 type User struct {
 	UserID             int    `json:"id"`
 	UserLogin          string `json:"login"`
-	UserEmail          string `json:"email"`
 	UserHashedPassword []byte `json:"hashword"`
 }
 
@@ -77,14 +76,13 @@ func Login(login string, password string) (*User, error) {
 }
 
 //RegisterUser adds all user elements to a database if they are valid
-func RegisterUser(login string, email string, password string) error {
+func RegisterUser(login string, password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 	addErr := AddUser(User{
 		UserLogin:          login,
-		UserEmail:          email,
 		UserHashedPassword: hashedPassword})
 	return addErr
 }
@@ -101,7 +99,7 @@ func getUserByLogin(login string) (*User, error) {
 	}
 	// Get the user's hashed password. Will need to be scanned
 	userRows, err := db.Query(`
-		SELECT userID, userLogin, userEmail, userHashedPassword
+		SELECT userID, userLogin, userHashedPassword
 		FROM userData
 		WHERE userLogin = '` + login + `'
 	`)
@@ -111,7 +109,7 @@ func getUserByLogin(login string) (*User, error) {
 	}
 	var user User
 	for userRows.Next() {
-		userRows.Scan(&user.UserID, &user.UserLogin, &user.UserEmail, &user.UserHashedPassword)
+		userRows.Scan(&user.UserID, &user.UserLogin, &user.UserHashedPassword)
 	}
 	return &user, err
 }
@@ -129,12 +127,12 @@ func AddUser(user User) error {
 
 	//Since everything checks out, add the user to the database
 	statement, err := db.Prepare(`
-		INSERT INTO userData (userLogin, userEmail, userHashedPassword) VALUES (?, ?, ?)
+		INSERT INTO userData (userLogin, userHashedPassword) VALUES (?, ?)
 	`)
 	if err != nil {
 		return err
 	}
-	statement.Exec(user.UserLogin, user.UserEmail, user.UserHashedPassword)
+	statement.Exec(user.UserLogin, user.UserHashedPassword)
 	return nil
 }
 
@@ -143,7 +141,7 @@ func GetAllUsers() ([]*User, error) {
 	var users []*User //read users into this slice of User
 	//Get all necessary user info for each user to fill the users array
 	userInfoRows, err := db.Query(`
-		SELECT userID, userLogin, userEmail, userHashedPassword FROM userData
+		SELECT userID, userLogin, userHashedPassword FROM userData
 	`)
 	defer userInfoRows.Close()
 	if err != nil {
@@ -151,14 +149,12 @@ func GetAllUsers() ([]*User, error) {
 	}
 	var userID int
 	var userLogin string
-	var userEmail string
 	var userHashedPassword []byte
 	for userInfoRows.Next() {
-		userInfoRows.Scan(&userID, &userLogin, &userEmail, &userHashedPassword)
+		userInfoRows.Scan(&userID, &userLogin, &userHashedPassword)
 		user := User{
 			UserID:             userID,
 			UserLogin:          userLogin,
-			UserEmail:          userEmail,
 			UserHashedPassword: userHashedPassword}
 		users = append(users, &user)
 	}
@@ -171,7 +167,7 @@ func userExistsInDB(user *User) (bool, error) {
 	result, err := db.Query(`
 		SELECT COUNT(1)
 			FROM userData
-			WHERE (userLogin = '` + user.UserLogin + `') OR (userEmail = '` + user.UserEmail + `')
+			WHERE userLogin = '` + user.UserLogin + `'
 	`)
 	defer result.Close()
 	if err != nil {

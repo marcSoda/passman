@@ -18,7 +18,7 @@ type ClumpPacket struct {
 	Time   string            `json:"time"`
 }
 
-//AuthPacket is a struct continaing login data HOPEFULLY TEMPORARY
+//AuthPacket is a struct continaing login data
 type AuthPacket struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
@@ -110,7 +110,6 @@ func clumpsPostHandler(w http.ResponseWriter, r *http.Request) {
 		//handle error
 		fmt.Println(err)
 	}
-
 	// database.ClearUserClumps(user)
 	// os.Exit(0)
 }
@@ -190,11 +189,10 @@ func registerGetHandler(w http.ResponseWriter, r *http.Request) {
 func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 	//Parse the form
 	r.ParseForm()
-	login := r.PostForm.Get("login")
-	email := r.PostForm.Get("email")
+	login := r.PostForm.Get("email")
 	password := r.PostForm.Get("password")
 	//Register the user and handle errors
-	err := database.RegisterUser(login, email, password)
+	err := database.RegisterUser(login, password)
 	if err == database.ErrUserExists {
 		templates.Execute(w, "register.html", err.Error())
 		return
@@ -204,5 +202,4 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	//After register, redirect to login
 	http.Redirect(w, r, "/login", 302)
-
 }
