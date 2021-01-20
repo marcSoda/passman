@@ -124,7 +124,7 @@ func indexPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func loginGetHandler(w http.ResponseWriter, r *http.Request) {
 	//todo: don't allow login if already logged in
-	templates.Execute(w, "login.html", nil)
+	templates.Execute(w, "auth.html", nil)
 }
 
 func loginPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -179,27 +179,25 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	templates.Execute(w, "logout.html", "You have been succussfully logged out")
+	templates.Execute(w, "auth.html", nil)
 }
 
 func registerGetHandler(w http.ResponseWriter, r *http.Request) {
-	templates.Execute(w, "register.html", nil)
+	templates.Execute(w, "auth.html", nil)
 }
 
 func registerPostHandler(w http.ResponseWriter, r *http.Request) {
-	//Parse the form
-	r.ParseForm()
-	login := r.PostForm.Get("email")
-	password := r.PostForm.Get("password")
-	//Register the user and handle errors
-	err := database.RegisterUser(login, password)
+	var packet AuthPacket
+	decoder := json.NewDecoder(r.Body)
+	decoder.Decode(&packet)
+
+	//register user and handle errors
+	err := database.RegisterUser(packet.Login, packet.Password)
 	if err == database.ErrUserExists {
-		templates.Execute(w, "register.html", err.Error())
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	//After register, redirect to login
-	http.Redirect(w, r, "/login", 302)
 }

@@ -569,6 +569,7 @@ document.getElementById("add-clump-link").addEventListener("click", openClumpEdi
 document.getElementById("logout-link").addEventListener("click", logout)
 async function logout() {
     await sync()
+    localStorage.clear()
     window.location.href = '/logout'
 }
 

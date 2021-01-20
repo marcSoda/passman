@@ -1,0 +1,130 @@
+:root {
+    font-size: 16px;
+    font-family: Helvetica, sans-serif;
+}
+* {
+    margin: 0;
+    padding: 0;
+}
+body {
+    --bg1: #1D1D1D;
+    --bg2: #181818;
+    --grey1: #909096;
+    --accent: #0087D7;
+    --shadow-color: black;
+    --text-color1: #D6D6D6;
+    --text-color2: var(--grey1);
+    color: var(--text-color1);
+    transition: .2s;
+    background: var(--bg1);
+}
+.hero {
+    height: 100%;
+    width: 100%;
+    background-color: var(--bg1);
+    position: absolute;
+    font-size: 1vw;
+}
+.form-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 30em;
+    height: 24em;
+    position: relative;
+    margin: 6% auto;
+    background: var(--bg2);
+    padding: 1em;
+    transition: height .4s;
+    overflow: hidden;
+}
+.active {
+    height: 30em;
+}
+.button-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 20em;
+    margin: 3em 0 0 0;
+    position: relative;
+    box-shadow: 0 0 20px 9px var(--shadow-color);
+    border-radius: 3em;
+    background-color: var(--bg1);
+}
+.toggle-btn {
+    flex: 1;
+    padding: 1em 0;
+    cursor: pointer;
+    background: transparent;
+    outline: none;
+    position: relative;
+    border: none;
+    color: var(--text-color1);
+    z-index: 1;
+}
+.toggle-btn:hover {
+    filter: brightness(1.7);
+}
+#btn {
+    top: 0;
+    left: 0;
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3em;
+    transition: .4s;
+}
+.input-group {
+    position: absolute;
+    top: 6em;
+    width: 20em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: .5s;
+}
+.input-field {
+    width: 100%;
+    margin-top: 4em;
+    border-left: 0;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--accent);
+    outline: none;
+    background: transparent;
+    color: var(--text-color1);
+}
+.submit-btn {
+    width: 75%;
+    padding: 1em 3em;
+    cursor: pointer;
+    display: block;
+    background: var(--accent);
+    border: 0;
+    outline: none;
+    border-radius: 30px;
+    color: var(--text-color1);
+}
+.submit-btn:hover {
+    filter: brightness(1.3);
+}
+.checkbox {
+    margin: 2em .5em 0em 0;
+}
+label {
+    color: var(--text-color2);
+}
+#login-form {
+    transition: .4s;
+}
+#login-form .submit-btn {
+    margin-top: 4em;
+}
+#register-form .submit-btn {
+    margin-top: 2em;
+}
+#register-form {
+    left: 100%;
+}
