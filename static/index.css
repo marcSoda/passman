@@ -196,6 +196,108 @@ body.light {
     background: rgba(0,0,0,0.7);
     top: 0;
     z-index: 2; 		/*ensure that the popup is always infront of all clumpContainers*/
+    overflow: hidden;
+}
+
+#password-generator {
+    font-size: 1vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(150%,-50%);
+    transition: .2s;
+    padding: 2em;
+    width: 30em;
+    max-width: 100%;
+    background-color: var(--bg1);
+    color: var(--text-color1);
+}
+
+#password-generator p {
+    margin: 1em 0;
+}
+
+#password-generator h2 {
+    font-size: 3em;
+    margin: 0 0 .5em;
+    text-align: center;
+}
+
+#password-generator input[type=checkbox] {
+    margin-right: 0;
+}
+
+#password-generator input[type=text] {
+    background: var(--bg2);
+    color: var(--text-color1);
+    padding-left: .5em;
+    height: 3vw;
+    width: 2em;
+}
+
+#password-generator input[type=range] {
+    width: 15vw;
+}
+
+#password-generator .result-container {
+    background-color: var(--bg2);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    letter-spacing: 1px;
+    padding: 12px 10px;
+    height: 2em;
+    font-size: 2em;
+}
+
+#password-generator .result-container #result {
+    word-wrap: break-word;
+    max-width: calc(100% - 40px);
+}
+
+#password-generator .btn {
+    border: none;
+    border-radius: .2em;
+    color: var(--text-color1);
+    cursor: pointer;
+    font-size: 1.5em;
+    padding: .2em;
+}
+
+#password-generator .btn-div {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+#password-generator .btn-div #generate {
+    flex: 2;
+    background-color: var(--bg2);
+}
+
+#password-generator .btn-div #cancel-password {
+    flex: 1;
+    margin-right: 2em;
+    background-color: red;
+}
+
+#password-generator .btn-div #use-password {
+    flex: 1;
+    margin-left: 2em;
+    background-color: var(--accent);
+}
+
+#password-generator .btn-div .btn:hover {
+    filter: brightness(.7);
+}
+
+#password-generator .setting {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px 0;
+    font-size: 2em;
 }
 
 #clumpEditor {
@@ -210,6 +312,7 @@ body.light {
     padding: 3% 5%;
     border-radius: .5rem;
     transform: translate(-50%, -50%);
+    transition: .2s;
 }
 
 #clumpEditor .editorHeader {
@@ -268,7 +371,7 @@ body.light {
 }
 
 .password-line input {
-    width: calc(18em - 10%) !important;
+    width: calc(18em - 30%) !important;
 }
 
 .password-line svg {

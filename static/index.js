@@ -6,6 +6,10 @@ var masterPassword
 var openedClumpIndex = -1 //clump opened in the clump editor. -1 when no clump opened -2 when new clump menu is opened
 var masterPassMenuOpened = true
 
+//state variables
+var menuStatus
+var generatorOpened
+
 function queryPassword() {
     var input = document.getElementById("masterPassInput")
     input.focus()
@@ -13,11 +17,11 @@ function queryPassword() {
     var masterPassSVG = document.getElementById("masterPassSVG")
     masterPassSVG.addEventListener("click", () => {
 	svgValue = masterPassSVG.firstChild
-	if (svgValue.href.baseVal === "#viewPassword-svg") {
-	    svgValue.setAttribute("href", "#hidePassword-svg")
+	if (svgValue.href.baseVal === "#viewPassword-symbol") {
+	    svgValue.setAttribute("href", "#hidePassword-symbol")
 	    input.type = "text"
 	} else {
-	    svgValue.setAttribute("href", "#viewPassword-svg")
+	    svgValue.setAttribute("href", "#viewPassword-symbol")
 	    input.type = "password"
 	}
     })
@@ -402,7 +406,7 @@ document.querySelectorAll("#clumpEditor input").forEach(input => { //for each in
 function editorButtonController() {
     if (openedClumpIndex !== -2) { //if an old clump is being edited
 	clump = getVaultClumpByID(openedClumpIndex)
-	if (document.getElementById("show-hide-svg").firstChild.href.baseVal === "#hidePassword-svg") { //if the password is visible
+	if (document.getElementById("show-hide-svg").firstChild.href.baseVal === "#hidePassword-symbol") { //if the password is visible
 	    if (document.querySelector("#clumpEditor .editorBody .password-line .password").value !== clump.password) { //if password has been changed
 		extendEditorButtons()
 		return
@@ -523,19 +527,19 @@ document.getElementById("show-hide-svg").addEventListener("click", function() {
     viewHide = document.getElementById("show-hide-svg")
     passwordField = document.querySelector(".password-line input")
     if (openedClumpIndex != -2) { //if a NEW clump is being created
-	if (viewHide.firstChild.href.baseVal === "#viewPassword-svg") { //if password not shown
+	if (viewHide.firstChild.href.baseVal === "#viewPassword-symbol") { //if password not shown
             passwordField.type = "text"
             passwordField.readOnly = false
             passwordField.value = getVaultClumpByID(openedClumpIndex).password
-	    viewHide.firstChild.setAttribute("href", "#hidePassword-svg")
+	    viewHide.firstChild.setAttribute("href", "#hidePassword-symbol")
 	} else hideEditorPassword(false) //turned into a function because closeClumpEditor() also uses it
     } else {
 	if (passwordField.type === "text") { //if password not shown
 	    passwordField.type = "password"
-    viewHide.firstChild.setAttribute("href", "#viewPassword-svg")
+    viewHide.firstChild.setAttribute("href", "#viewPassword-symbol")
 	} else {
 	    passwordField.type = "text"
-	    viewHide.firstChild.setAttribute("href", "#hidePassword-svg")
+	    viewHide.firstChild.setAttribute("href", "#hidePassword-symbol")
 	}
     }
 })
@@ -547,7 +551,7 @@ function hideEditorPassword(force) {
     passwordField.type = "text"
     passwordField.readOnly = true
     passwordField.value = "••••••••••••••"
-    viewHide.firstChild.setAttribute("href", "#viewPassword-svg")
+    viewHide.firstChild.setAttribute("href", "#viewPassword-symbol")
 }
 
 //search
@@ -602,5 +606,128 @@ function retractSearchBar(resetResults) {
 document.getElementById('themeTog').addEventListener('click', () => {
     document.body.classList.toggle('light')
 })
+
+//copy password
+document.getElementById('copy-svg').addEventListener('click', () => {
+    navigator.clipboard.writeText(vault[openedClumpIndex].password)
+            .then(() => {
+              console.log('Password copied to clipboard');
+            })
+            .catch(err => {
+              alert('Password copy error: ', err);
+            });
+})
+
+//slide generator
+document.getElementById('generate-svg').addEventListener('click', () => {
+    var genElement = document.getElementById('password-generator')
+    var clumpEditor = document.getElementById('clumpEditor')
+    if (!generatorOpened) {
+	genElement.style.transform = "translate(-50%, -50%)"
+	clumpEditor.style.transform = "translate(-200%, -50%)"
+    }
+})
+
+//password generator (code influenced by Traversy Media)
+const resultEl = document.getElementById('result');
+const lengthSliderEl = document.getElementById('length-slider');
+const lengthDispEl = document.getElementById('length-display');
+const uppercaseEl = document.getElementById('uppercase');
+const lowercaseEl = document.getElementById('lowercase');
+const numbersEl = document.getElementById('numbers');
+const symbolsEl = document.getElementById('symbols');
+const generateEl = document.getElementById('generate');
+const usePassEl = document.getElementById('use-password')
+const editorPassEl = document.getElementById("password-input")
+const editorViewPassEl = document.getElementById("show-hide-svg")
+const cancelPassEl = document.getElementById("cancel-password")
+const genElementEl = document.getElementById('password-generator')
+const clumpEditorEl = document.getElementById('clumpEditor')
+
+lengthSliderEl.addEventListener("input", () => {
+    lengthDispEl.value = lengthSliderEl.value
+})
+
+usePassEl.addEventListener("click", () => {
+    // if (editorViewPassEl.href = "viewPassword-symbol") {
+    // 	var event = document.createEvent("clickSVG");
+    // 	event.initEvent("click",true,true);
+    // 	editorViewPassEl.dispatchEvent(event);
+    // }
+
+//YOU ARE HERE. SIM CLICK ON EDITORVIEWPASS
+
+
+    editorPassEl.value = resultEl.innerText
+    resultEl.innerText = ""
+    lengthSliderEl.value = "20"
+    lengthDispEl.value = "20"
+    clumpEditorEl.style.transform = "translate(-50%, -50%)"
+    genElementEl.style.transform = "translate(150%, -50%)"
+    extendEditorButtons()
+})
+
+cancelPassEl.addEventListener("click", () => {
+    resultEl.innerText = ""
+    lengthSliderEl.value = "20"
+    lengthDispEl.value = "20"
+    clumpEditorEl.style.transform = "translate(-50%, -50%)"
+    genElementEl.style.transform = "translate(150%, -50%)"
+})
+
+const randomFunc = {
+    lower: getRandomLower,
+    upper: getRandomUpper,
+    number: getRandomNumber,
+    symbol: getRandomSymbol
+}
+
+generateEl.addEventListener('click', () => {
+    const length = +lengthSliderEl.value;
+    const hasLower = lowercaseEl.checked;
+    const hasUpper = uppercaseEl.checked;
+    const hasNumber = numbersEl.checked;
+    const hasSymbol = symbolsEl.checked;
+
+    resultEl.innerText = generatePassword(hasLower, hasUpper, hasNumber, hasSymbol, length);
+});
+
+function generatePassword(lower, upper, number, symbol, length) {
+    let generatedPassword = '';
+    const typesCount = lower + upper + number + symbol;
+    const typesArr = [{lower}, {upper}, {number}, {symbol}].filter(item => Object.values(item)[0]);
+
+    if(typesCount === 0) {
+	return '';
+    }
+
+    for(let i=0; i<length; i+=typesCount) {
+	typesArr.forEach(type => {
+	    const funcName = Object.keys(type)[0];
+	    generatedPassword += randomFunc[funcName]();
+	});
+    }
+
+    const finalPassword = generatedPassword.slice(0, length);
+
+    return finalPassword;
+}
+
+function getRandomLower() {
+    return String.fromCharCode(Math.floor(Math.random() * 26) + 97);
+}
+
+function getRandomUpper() {
+    return String.fromCharCode(Math.floor(Math.random() * 26) + 65);
+}
+
+function getRandomNumber() {
+    return +String.fromCharCode(Math.floor(Math.random() * 10) + 48);
+}
+
+function getRandomSymbol() {
+    const symbols = '!@#$%^&*(){}[]=<>/,.'
+    return symbols[Math.floor(Math.random() * symbols.length)];
+}
 
 document.addEventListener('DOMContentLoaded', queryPassword)
