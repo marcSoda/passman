@@ -3,13 +3,16 @@ var syncInterval
 var connected
 var hardwareKey //key based on hardware info used to encrypt/decrypt local storage
 var masterPassword
-var openedClumpIndex = -1 //clump opened in the clump editor. -1 when no clump opened -2 when new clump menu is opened -3 when generator is opened
+var openedClumpIndex = -1 //clump opened in the clump editor. -1 when no clump opened
 var masterPassMenuOpened = true
+var popupState = 4 //0 hidden; 1: new clump; 2 existing clump; 3: password generator; 4: master pass menu
 
 //js elements
 const popupEl = document.getElementById("popup")
 const clumpEditorEl = document.getElementById("clumpEditor")
 const passwordViewToggleEl = document.getElementById("view-toggle-svg")
+const generatorEl = document.getElementById('password-generator')
+const masterPassMenuEl = document.getElementById("masterPassMenu")
 
 function queryPassword() {
     let inputEl = document.getElementById("masterPassInput")
@@ -50,10 +53,7 @@ function authenticate(login, password) {
     .then(response => {
 	if (response.ok) {
 	    console.log("succussful auth")
-	    popupEl.style.display = "none"
-	    document.getElementById("masterPassMenu").style.display = "none" //don't display password menu on next popup
-	    clumpEditorEl.style.display = "flex" //display clump editor on next popup
-	    masterPassMenuOpened = false
+	    closePopup()
 	    startup()
 	} else {
 	    console.log("unsuccusful auth")
@@ -364,9 +364,19 @@ function getVaultClumpByID(clumpID) {
     return ret
 }
 
+function closePopup() {
+    generatorEl.style.diaplsy = "none"
+    clumpEditorEl.style.diaplsy = "none"
+    masterPassMenuEl.style.display = "none"
+    popupEl.style.display = "none"
+    popupState = 0
+}
+
 function openClumpEditor(clump, img) {
+    popupState = 2
     openedClumpIndex = clump.id
     popupEl.style.display = "initial"
+    clumpEditorEl.style.display = "initial"
     clump = getVaultClumpByID(openedClumpIndex)
     clumpEditorEl.querySelector(".editorHeader .name").value = clump.name
     clumpEditorEl.querySelector(".website-line .url").value = clump.url
@@ -379,8 +389,10 @@ function openClumpEditor(clump, img) {
 }
 
 function openClumpEditorForNew() {
-    openedClumpIndex = -2
+    popupState = 1
+    openedClumpIndex = -1
     popupEl.style.display = "initial"
+    clumpEditorEl.style.display = "initial"
     clump = getVaultClumpByID(openedClumpIndex)
     clumpEditorEl.querySelector(".editorHeader .name").focus()
     clumpEditorEl.querySelector(".editorHeader .name").value = ""
@@ -401,7 +413,7 @@ document.querySelectorAll("#clumpEditor input").forEach(input => { //for each in
 })
 
 function editorButtonController() {
-    if (openedClumpIndex !== -2) { //if an old clump is being edited
+    if (popupState === 2) { //if an old clump is being edited
 	clump = getVaultClumpByID(openedClumpIndex)
 	if (passwordViewToggleEl.firstChild.href.baseVal === "#hidePassword-symbol") { //if the password is visible
 	    if (document.querySelector("#clumpEditor .editorBody .password-line .password").value !== clump.password) { //if password has been changed
@@ -428,11 +440,12 @@ function editorButtonController() {
 document.addEventListener("keydown", event => {
     if (event.code === "Escape") {
 	retractSearchBar(true) //close the search bar and reset results
-	if (openedClumpIndex >= 0 || openedClumpIndex == -2) closeClumpEditor()
+	if (popupState === 3) closeGenerator()
+	else closeClumpEditor()
     } else if (event.code === "Enter")  {
 	retractSearchBar(false) //close the search bar but dont reset results
-	if (openedClumpIndex >= 0 || openedClumpIndex == -2 && document.getElementById("saveClumpEdit").style.visibility === "visible") saveClick()
-	if (masterPassMenuOpened) document.getElementById("submitMasterPass").click()
+	if (popupState === 1 || popupState === 2 && document.getElementById("saveClumpEdit").style.visibility === "visible") saveClick()
+	else if (popupState === 4) document.getElementById("submitMasterPass").click()
     }
 })
 document.getElementById("closeEdit").addEventListener('click', closeClumpEditor)
@@ -442,7 +455,7 @@ function closeClumpEditor() {
     clumpEditorEl.querySelector("#deleteClump").style.display = "initial" //ensure that the delete button is displayed
     hideEditorPassword(true);
     passwordViewToggleEl.firstChild.href.baseVal = "#viewPassword-symbol"
-    openedclumpindex = -1 //clump is no longer open
+    openedClumpIndex = -1 //clump is no longer open
 }
 function extendEditorButtons() {
     document.getElementById("saveClumpEdit").style.visibility = "visible"
@@ -459,7 +472,7 @@ function revertEditorButtons() { //hide save button and change
 
 document.getElementById("saveClumpEdit").addEventListener('click', saveClick)
 function saveClick() { //update vault, upload to server
-    if (openedClumpIndex != -2) { //if an existing clump is being saved
+    if (popupState === 2) { //if an existing clump is being saved
 	clump = getVaultClumpByID(openedClumpIndex)
 	clump.name = document.querySelector("#clumpEditor .editorHeader .name").value
 	clump.url = document.querySelector("#clumpEditor .editorBody .website-line .url").value
@@ -524,7 +537,7 @@ function deleteClick() {
 passwordViewToggleEl.addEventListener("click", toggleViewPass)
 function toggleViewPass() {
     passwordField = document.querySelector(".password-line input")
-    if (openedClumpIndex != -2) { //if an old clump is being edited
+    if ((popupState === 2) || (popupState === 3 && openedClumpIndex !== -1)) { //if an old clump is being edited
 	if (passwordViewToggleEl.firstChild.href.baseVal === "#viewPassword-symbol") { //if password not shown
             passwordField.type = "text"
             passwordField.readOnly = false
@@ -608,12 +621,13 @@ document.getElementById('themeTog').addEventListener('click', () => {
 //copy password
 document.getElementById('copy-svg').addEventListener('click', () => {
     navigator.clipboard.writeText(vault[openedClumpIndex].password)
-            .then(() => {
-              console.log('Password copied to clipboard');
-            })
-            .catch(err => {
-              alert('Password copy error: ', err);
-            });
+	.then(() => {
+	    console.log('Password copied to clipboard');
+	    closeClumpEditor()
+	})
+	.catch(err => {
+	    alert('Password copy error: ', err);
+	});
 })
 
 //password generator (code influenced by Traversy Media)
@@ -628,15 +642,24 @@ const generateEl = document.getElementById('generate');
 const usePassEl = document.getElementById('use-password')
 const editorPassEl = document.getElementById("password-input")
 const cancelPassEl = document.getElementById("cancel-password")
-const genElementEl = document.getElementById('password-generator')
 
 //slide generator
 document.getElementById('generate-svg').addEventListener('click', () => {
-    if (openedClumpIndex != -3) { //if generator not opened
-	genElementEl.style.transform = "translate(-50%, -50%)"
-	clumpEditorEl.style.transform = "translate(-200%, -50%)"
-    }
+    generatorEl.style.transform = "translate(-50%, -50%)"
+    clumpEditorEl.style.transform = "translate(-200%, -50%)"
+    popupState = 3
 })
+
+cancelPassEl.addEventListener("click", closeGenerator)
+function closeGenerator() {
+    if (openedClumpIndex === -1) popupState = 1
+    else popupState = 2
+    resultEl.innerText = ""
+    lengthSliderEl.value = "20"
+    lengthDispEl.value = "20"
+    clumpEditorEl.style.transform = "translate(-50%, -50%)"
+    generatorEl.style.transform = "translate(150%, -50%)"
+}
 
 lengthSliderEl.addEventListener("input", () => {
     lengthDispEl.value = lengthSliderEl.value
@@ -645,22 +668,9 @@ lengthSliderEl.addEventListener("input", () => {
 usePassEl.addEventListener("click", () => {
     if (resultEl.innerText === "") return //return if password not generated
     if (passwordViewToggleEl.firstChild.href.baseVal === "#viewPassword-symbol") toggleViewPass()
-    console.log(passwordViewToggleEl.firstChild.href.baseVal)
     editorPassEl.value = resultEl.innerText
-    resultEl.innerText = ""
-    lengthSliderEl.value = "20"
-    lengthDispEl.value = "20"
-    clumpEditorEl.style.transform = "translate(-50%, -50%)"
-    genElementEl.style.transform = "translate(150%, -50%)"
+    closeGenerator()
     extendEditorButtons()
-})
-
-cancelPassEl.addEventListener("click", () => {
-    resultEl.innerText = ""
-    lengthSliderEl.value = "20"
-    lengthDispEl.value = "20"
-    clumpEditorEl.style.transform = "translate(-50%, -50%)"
-    genElementEl.style.transform = "translate(150%, -50%)"
 })
 
 const randomFunc = {

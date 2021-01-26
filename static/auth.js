@@ -1,3 +1,4 @@
+var menuState = 0
 document.getElementById('login-button').addEventListener('click', authenticate)
 document.getElementById('register-button').addEventListener('click', register)
 
@@ -79,14 +80,19 @@ document.getElementById("register-toggle").addEventListener("click", () => {
     regMenu.style.transform = "translate(-26em, 0)"
     btn.style.left = "50%";
     container.classList.toggle('active')
+    menuState = 1
 })
 document.getElementById("login-toggle").addEventListener("click", () => {
     loginMenu.style.transform = "translate(0, 0)"
     regMenu.style.transform = "translate(0, 0)"
     btn.style.left = "0";
     container.classList.toggle('active')
+    menuState = 0
 })
 
 document.addEventListener("keydown", event => {
-    if (event.code === "Enter") authenticate();
+    if (event.code === "Enter") {
+	if (menuState === 0) authenticate()
+	else register()
+    }
 })
