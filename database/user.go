@@ -132,7 +132,10 @@ func AddUser(user User) error {
 	if err != nil {
 		return err
 	}
-	statement.Exec(user.UserLogin, user.UserHashedPassword)
+	_, sErr := statement.Exec(user.UserLogin, user.UserHashedPassword)
+	if sErr != nil {
+		return sErr
+	}
 	return nil
 }
 

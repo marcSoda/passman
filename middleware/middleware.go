@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"../database"
-	"../sessions"
+	"passman/database"
+	"passman/sessions"
 )
 
 //AuthRequired ensures that the session is valid

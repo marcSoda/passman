@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"../database"
-	"../middleware"
-	"../sessions"
-	"../templates"
+	"passman/database"
+	"passman/middleware"
+	"passman/sessions"
+	"passman/templates"
 	"github.com/gorilla/mux"
 )
 

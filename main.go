@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
-	"./database"
-	"./routes"
-	"./templates"
+	"passman/database"
+	"passman/routes"
+	"passman/templates"
 )
 
 func main() {
@@ -17,5 +17,5 @@ func main() {
 	templates.LoadTemplates("templates/*.html")
 	r := routes.NewRouter()
 	fmt.Println("Running...")
-	log.Fatal(http.ListenAndServeTLS(":8000", "cert/cert.pem", "cert/key.pem", r))
+	log.Fatal(http.ListenAndServe(":8000", r))
 }

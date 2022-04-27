@@ -48,7 +48,7 @@ func RetrieveUserClumps(user *User) ([]*Clump, error) {
 func ClearUserClumps(user *User) error {
 	statement, err := db.Prepare(`
 		delete from clumps
-		where UserID = ` + strconv.Itoa(user.UserID) + `
+		where userID = ` + strconv.Itoa(user.UserID) + `
 	`)
 	if err != nil {
 		return err
