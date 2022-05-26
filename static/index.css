@@ -10,12 +10,17 @@
     text-decoration:none;
 }
 
-body {
-    --bg1: #1D1D1D;
+/*
+Different body definitions are for theme toggling
+*/
+
+body.dark {
+    --bg1: #242424;
     --bg2: #181818;
     --grey1: #909096;
     --accent: #0087D7;
     --shadow-color: black;
+    --shade-color: rgba(0, 0, 0, .7);
     --themeTog-color: #E6E6E6;
     --text-color1: #D6D6D6;
     --text-color2: var(--grey1);
@@ -26,12 +31,13 @@ body {
     background: var(--bg1);
 }
 
-body.light {
+body {
     --bg1: #E6E6E6;
     --bg2: #EFEFEF;
     --grey1: #909096;
     --accent: #0087D7;
-    --shadow-color: rgba(0, 0, 0, .3);
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --shade-color: rgba(0, 0, 0, 0.7);
     --themeTog-color: #1D1D1D;
     --text-color1: #484848;
     --text-color2: var(--grey1);
@@ -42,22 +48,61 @@ body.light {
     background: var(--bg1);
 }
 
-#addClump {
-    /* display:none; */
-    margin-left: 100px;
+/*
+shade stuff
+the shade is overlaid over the nav and clumps and under all popup menus to prevent interaction with anything besides a popup
+*/
+
+#shade {
+    visibility: visible;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: var(--shade-color);
+    top: 0;
+    z-index: 2;
+    overflow: hidden;
 }
-#passPrompt {
-    display:none;
+
+/*
+Search bar stuff
+*/
+
+#search-bar {
+    font-size: 1vw;
+    display: flex;
+    flex-direction: row;
+    width: var(--search-thickness);
+    height: 3em;
+    position: fixed;
+    top: 2vw;
+    left: 50vw;
+    transform: translate(-50%, -200%);
+    z-index: 2;
+    box-shadow: 10px 10px 10px var(--shadow-color);
+    transition: .2s;
 }
-#svg-symbol {
-    display: none;
+
+#search-bar input {
+    border: 4px solid var(--accent);
+    border-radius: .5rem;
+    background: var(--bg2);
+    font-size: 2em;
+    color: var(--text-color1);
+    width: 100%;
+    padding: .2em;
 }
+
+/*
+Navbar stuff
+*/
 
 #navbar {
     position: fixed;
+    top: 0;
     height: 100vh;
     width: var(--nav-thickness);
-    background-color: var(--bg2);
+    background-color: var(--bg1);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -97,7 +142,7 @@ body.light {
 #navbar .nav-text {
     position: absolute;
     opacity: 0;
-    font-size: 1.5vh;
+    font-size: .9vw;
     text-align: center;
     color: var(--accent);
     transition: .5s;
@@ -112,30 +157,11 @@ body.light {
     opacity: 100%;
 }
 
-#search-bar {
-    font-size: 1vw;
-    display: flex;
-    flex-direction: row;
-    width: var(--search-thickness);
-    height: 3em;
-    position: fixed;
-    top: 2vw;
-    left: 50vw;
-    transform: translate(-50%, -200%);
-    z-index: 2;
-    box-shadow: 10px 10px 10px var(--shadow-color);
-    transition: .2s;
-}
-
-#search-bar input {
-    border: 4px solid var(--accent);
-    border-radius: .5rem;
-    background: var(--bg2);
-    font-size: 2em;
-    color: var(--text-color1);
-    width: 100%;
-    padding: .2em;
-}
+/*
+Clumps stuff:
+This is the main part of the window where all of the entries are shown in their unexpanded form
+Note: most of this structure is not defined in index.html, but is added to the dom from index.js
+*/
 
 #clumps {
     font-size: 1vw;
@@ -144,11 +170,12 @@ body.light {
     padding: 2em;
     margin-left: var(--nav-thickness);
     justify-content: center;
+    z-index: 3;
 }
 
 #clumps .clumpContainer {
     margin: .5em;
-    border-radius: 5px;
+    border-radius: .5em;
     padding: 1em 1em .5em 1em;
     background-color: var(--bg2);
     box-shadow: 2px 2px 2px var(--shadow-color);
@@ -160,7 +187,6 @@ body.light {
     transform: scale(1.1);
     background-color: var(--accent);
     box-shadow: 10px 10px 10px var(--shadow-color);
-    z-index: 1; 		/*ensures clumpContainers are always behind the popup*/
 }
 
 #clumps .clumpContainer .previewContainer {
@@ -173,7 +199,7 @@ body.light {
 
 #clumps .clumpContainer .previewContainer .imgLogo {
     width: 10em;
-    border-radius: .5rem;
+    border-radius: 1rem;
     transition: .2s;
     margin-bottom: auto;
     margin-top: auto;
@@ -188,264 +214,479 @@ body.light {
     padding-top: .5em;
 }
 
-#popup {
+/*
+masterPassMenu, clumpEditor, clumpCreator, and passwordGenerator are all members of popup
+*/
+
+.popup {
     visibility: visible;
-    position: absolute;
+    position: fixed;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.7);
     top: 0;
-    z-index: 2; 		/*ensure that the popup is always infront of all clumpContainers*/
+    z-index: 3;
     overflow: hidden;
+    box-shadow: 4px 4px 4px var(--shadow-color);
 }
+
+/*
+Password Generator: This section handles all of the password generator tools
+*/
 
 #password-generator {
     font-size: 1vw;
-    position: absolute;
+    display: flex;
+    flex-direction: column;
     top: 50%;
     left: 50%;
-    transform: translate(150%,-50%);
-    transition: .2s;
-    padding: 2em;
-    width: 30em;
-    max-width: 100%;
-    background-color: var(--bg1);
-    color: var(--text-color1);
-}
-
-#password-generator p {
-    margin: 1em 0;
-}
-
-#password-generator h2 {
-    font-size: 3em;
-    margin: 0 0 .5em;
-    text-align: center;
-}
-
-#password-generator input[type=checkbox] {
-    margin-right: 0;
-}
-
-#password-generator input[type=text] {
+    width: 40vw;
+    height: 35vw;
+    transform: translate(-50%, -60%);
     background: var(--bg2);
+    padding: 3% 5%;
+    border-radius: .5rem;
     color: var(--text-color1);
-    padding-left: .5em;
-    height: 3vw;
-    width: 2em;
-}
-
-#password-generator input[type=range] {
-    width: 15vw;
 }
 
 #password-generator .result-container {
-    background-color: var(--bg2);
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    position: relative;
-    letter-spacing: 1px;
-    padding: 12px 10px;
-    height: 2em;
-    font-size: 2em;
-}
-
-#password-generator .result-container #result {
-    word-wrap: break-word;
-    max-width: calc(100% - 40px);
-}
-
-#password-generator .btn {
-    border: none;
-    border-radius: .2em;
-    color: var(--text-color1);
-    cursor: pointer;
+    text-align: center;
+    font-weight: bold;
     font-size: 1.5em;
-    padding: .2em;
-}
-
-#password-generator .btn-div {
     width: 100%;
-    display: flex;
-    flex-direction: row;
+    color: var(--text-color2);
 }
 
-#password-generator .btn-div #generate {
-    flex: 2;
-    background-color: var(--bg2);
-}
-
-#password-generator .btn-div #cancel-password {
-    flex: 1;
-    margin-right: 2em;
-    background-color: red;
-}
-
-#password-generator .btn-div #use-password {
-    flex: 1;
-    margin-left: 2em;
-    background-color: var(--accent);
-}
-
-#password-generator .btn-div .btn:hover {
-    filter: brightness(.7);
-}
-
-#password-generator .setting {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 15px 0;
-    font-size: 2em;
-}
-
-#clumpEditor {
-    font-size: 1vw;
-    display: none;
-    flex-direction: column;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 50em;
-    background: var(--bg1);
+#password-generator .setting1 {
+    font-weight: bold;
+    font-size: 1.5em;
     padding: 3% 5%;
-    border-radius: .5rem;
-    transform: translate(-50%, -50%);
-    transition: .2s;
-}
-
-#clumpEditor .editorHeader {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
     width: 100%;
-    height: 20%;
+    color: var(--text-color);
 }
 
-#clumpEditor .editorHeader .imgLogo {
-    width: 15%;
-    border: 1px solid black;
-    border-radius: .5rem;
+#password-generator .setting2 {
+    font-weight: bold;
+    font-size: 1.5em;
+    padding: 1% 2%;
+    width: 100%;
+    color: var(--text-color);
+    display: grid;
+    grid-template-columns: 5fr 1fr;
 }
 
-#clumpEditor .editorHeader input {
-    border: 2px solid var(--bg2);
-    border-radius: .2em;
-    background: var(--bg2);
-    width: 80%;
-    font-size: 5em;
-    color: var(--text-color1);
-    margin-left: .5em;
-    padding: .2em;
-}
-
-#clumpEditor .editorBody {
-    display: flex;
-    flex-direction: column;
-    margin-top: 1em;
-}
-
-#clumpEditor .editorBody div {
-    display: flex;
-    flex-direction: row;
-    margin: .75vw;
-}
-
-#clumpEditor .editorBody div input {
-    margin-left: auto;
-    border: 2px solid var(--bg2);
-    border-radius: .5rem;
-    background: var(--bg2);
-    font-size: 2em;
-    color: var(--text-color1);
-    width: 18em;
-    padding: .2em;
-}
-
-#clumpEditor .editorBody div span {
-    color: var(--text-color1);
-    font-size: 2em;
+#password-generator h2 {
+    text-align: center;
+    padding-bottom: 1em;
+    font-size: 2.5em;
+    color: var(--text-color2);
     padding-top: .5em;
 }
 
-.password-line input {
-    width: calc(18em - 30%) !important;
-}
-
-.password-line svg {
-    fill: var(--text-color1);
-    width: 10%;
-    height: 3em;
-    align-self: center;
-}
-
-.password-line svg:hover {
-    fill: var(--accent);
-}
-
-#clumpEditor .editorBody input:hover,
-  #clumpEditor .editorHeader input:hover {
-    border-color: var(--accent);
-}
-
-#clumpEditor .editorFooterButtons {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    width: 100%;
-    height: 10%;
-    margin-top: 1vw;
-}
-
-#clumpEditor .editorFooterButtons button {
+#password-generator #cancel-password {
+    display:inline-block;
     border: 2px solid black;
     border-radius: 1rem;
-    font-size: 2.1vw;
-    padding: 0 5vw;
+    font-size: 1.5em;
+    padding: 0 7vw 0 2vw;
     margin: 0 1vw;
     font-weight: bold;
     background-color: var(--bg2);
     transition: .05s;
     color: var(--text-color1);
+    align-self: center;
+    width: 1em;
 }
 
-#clumpEditor .editorFooterButtons #saveClumpEdit {
-    background-color: var(--accent);
-    visibility: hidden;
+#password-generator #cancel-password:hover {
+    border-color: var(--accent)
 }
 
-#clumpEditor .editorFooterButtons #deleteClump {
-    background-color: red;
-    transform: translate(-45%, 0);
+#password-generator #generate {
+    display:inline-block;
+    border: 2px solid black;
+    border-radius: 1rem;
+    font-size: 1.5em;
+    padding: 0 8.5vw 0 2vw;
+    margin: 0 1vw;
+    font-weight: bold;
+    background-color: var(--bg2);
+    transition: .05s;
+    color: var(--text-color1);
+    align-self: center;
+    width: 1em;
 }
 
-#clumpEditor .editorFooterButtons #closeEdit {
-    transform: translate(45%, 0);
+#password-generator #generate:hover {
+    border-color: var(--accent)
 }
 
-#clumpEditor .editorFooterButtons button:hover {
-    border-color: var(--accent);
+#password-generator #use-password {
+    display:inline-block;
+    border: 2px solid black;
+    border-radius: 1rem;
+    font-size: 1.5em;
+    padding: 0 4.5vw 0 2vw;
+    margin: 0 1vw;
+    font-weight: bold;
+    background-color: var(--bg2);
+    transition: .05s;
+    color: var(--text-color1);
+    align-self: center;
+    width: 1em;
 }
 
-#clumpEditor .editorFooterButtons button:active {
-    filter: brightness(.7);
-    border-color: var(--accent);
+#password-generator #use-password:hover {
+    border-color: var(--accent)
 }
+
+#password-generator .btn-div {
+    text-align: center;
+}
+
+#password-generator #length-display {
+    border: 2px solid var(--bg2);
+    border-radius: .5rem;
+    background: var(--bg2);
+    font-size: 1em;
+    color: var(--text-color1);
+    width: 2em;
+    padding: .1em;
+}
+
+#password-generator input {
+    border: 2px solid var(--bg2);
+    border-radius: .5rem;
+    background: var(--bg2);
+    font-size: 1em;
+    color: var(--text-color1);
+    width: 10em;
+    padding: .1em;
+}
+
+#password-generator input:hover {
+    border-color: var(--accent)
+}
+
+/*
+ClumpCreator stuff: This section handles all of the creator tools when adding a new password
+*/
+
+#clumpCreator {
+    font-size: 1vw;
+    display: flex;
+    flex-direction: column;
+    top: 50%;
+    left: 50%;
+    width: 30vw;
+    height: 27vw;
+    transform: translate(-50%, -60%);
+    background: var(--bg2);
+    padding: 3% 5%;
+    border-radius: .5rem;
+    color: var(--text-color1);
+}
+
+#clumpCreator .creatorBody {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
+    width: 100%;
+    color: var(--text-color);
+}
+
+#clumpCreator .creatorBody div {
+    padding-top: .5em;
+}
+
+#clumpCreator .creatorHeader {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
+    width: 100%;
+    color: var(--text-color);
+    padding-top:.5em;
+}
+
+#clumpCreator svg {
+    fill: var(--text-color1);
+    width: 10%;
+    max-height: 4em;
+    margin-left: 1em;
+    align-self:center;
+}
+
+#clumpCreator svg:hover {
+    fill: var(--accent);
+}
+
+#clumpCreator #closeCreator {
+    display:inline-block;
+    border: 2px solid black;
+    border-radius: 1rem;
+    font-size: 1.5em;
+    padding: 0 6vw 0 2vw;
+    margin: 0 1vw;
+    font-weight: bold;
+    background-color: var(--bg2);
+    transition: .05s;
+    color: var(--text-color1);
+    align-self: center;
+    width: 1em;
+}
+
+#clumpCreator #closeCreator:hover {
+    border-color: var(--accent)
+}
+
+#clumpCreator #saveCreator {
+    display:inline-block;
+    border: 2px solid black;
+    border-radius: 1rem;
+    font-size: 1.5em;
+    padding: 0 5.5vw 0 2vw;
+    margin: 0 1vw;
+    font-weight: bold;
+    background-color: var(--bg2);
+    transition: .05s;
+    color: var(--text-color1);
+    align-self: center;
+    width: 1em;
+}
+
+#clumpCreator #saveCreator:hover {
+    border-color: var(--accent)
+}
+
+#clumpCreator .creatorFooterButtons {
+    text-align: center;
+}
+
+#clumpCreator input {
+    border: 2px solid var(--bg2);
+    border-radius: .5rem;
+    background: var(--bg2);
+    font-size: 1em;
+    color: var(--text-color1);
+    width: 10em;
+    padding: .2em;
+}
+
+#clumpCreator input:hover {
+    border-color: var(--accent)
+}
+
+/*
+ClumpEditor stuff: This section handles all of the editor tools when editing a passwords fields
+*/
+
+#clumpEditor {
+    text-align: center;
+    font-size: 1vw;
+    display: flex;
+    flex-direction: column;
+    top: 50%;
+    left: 50%;
+    width: 40vw;
+    height: 35vw;
+    transform: translate(-50%, -60%);
+    background: var(--bg2);
+    padding: 3% 5%;
+    border-radius: .5rem;
+    color: var(--text-color1);
+}
+
+#clumpEditor .editorBody {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
+    width: 100%;
+    color: var(--text-color);
+}
+
+#clumpEditor .editorBody div {
+    padding-top: .5em;
+}
+
+#clumpEditor .editorHeader {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
+    width: 100%;
+    color: var(--text-color);
+    padding-top:.5em;
+}
+
+#clumpEditor svg {
+    fill: var(--text-color1);
+    width: 10%;
+    max-height: 4em;
+    margin-left: 1em;
+    align-self:center;
+}
+
+#clumpEditor svg:hover {
+    fill: var(--accent);
+}
+
+#clumpEditor #closeEditor {
+    display:inline-block;
+    border: 2px solid black;
+    border-radius: 1rem;
+    font-size: 1.5em;
+    padding: 0 6vw 0 2vw;
+    margin: 0 1vw;
+    font-weight: bold;
+    background-color: var(--bg2);
+    transition: .05s;
+    color: var(--text-color1);
+    align-self: center;
+    width: 1em;
+}
+
+#clumpEditor #closeEditor:hover {
+    border-color: var(--accent)
+}
+
+#clumpEditor #saveEditor {
+    display:inline-block;
+    border: 2px solid black;
+    border-radius: 1rem;
+    font-size: 1.5em;
+    padding: 0 5.5vw 0 2vw;
+    margin: 0 1vw;
+    font-weight: bold;
+    background-color: var(--bg2);
+    transition: .05s;
+    color: var(--text-color1);
+    align-self: center;
+    width: 0.5em;
+}
+
+#clumpEditor #saveEditor:hover {
+    border-color: var(--accent)
+}
+
+#clumpEditor #deleteClump {
+    display:inline-block;
+    border: 2px solid red;
+    border-radius: 1rem;
+    font-size: 1.5em;
+    margin: 0 1vw;
+    padding: 0 6.5vw 0 2vw;
+    font-weight: bold;
+    background-color: var(--bg2);
+    transition: .05s;
+    color: var(--text-color1);
+    align-self: center;
+    width: 0.5em;
+}
+
+#clumpEditor #deleteClump:hover {
+    border-color: var(--accent)
+}
+
+#clumpEditor input {
+    border: 2px solid var(--bg2);
+    border-radius: .5rem;
+    background: var(--bg2);
+    font-size: 1em;
+    color: var(--text-color1);
+    width: 10em;
+    padding: .1em;
+}
+
+#clumpEditor input:hover {
+    border-color: var(--accent)
+}
+
+#clumpEditor img {
+    border-radius: 1em;
+    height: 7em;
+    width: 7em;
+}
+
+/*
+styling of bug reporter
+ */
+
+#bugReporter {
+    font-size: 1vw;
+    display: flex;
+    flex-direction: column;
+    top: 55%;
+    left: 50%;
+    width: 50vw;
+    height: 42vw;
+    transform: translate(-50%, -60%);
+    background: var(--bg2);
+    padding: 3% 5%;
+    border-radius: .5rem;
+    color: var(--text-color1);
+    text-align: center;
+}
+
+#bugReporter h1 {
+    font-size: 3em;
+    padding-bottom: .5em;
+}
+
+#bugText {
+    border: 2px solid var(--accent);
+    border-radius: .5rem;
+    background: var(--bg2);
+    font-size: 3em;
+    color: var(--text-color1);
+    height: 10em;
+    width: 14em;
+    padding: .2em;
+}
+
+#bugReporterButtons {
+    padding-top: 2em;
+}
+
+#bugReporter button {
+    display:inline-block;
+    border: 2px solid black;
+    border-radius: 1rem;
+    font-size: 3em;
+    margin: 0 1vw;
+    padding: 0 6.5vw 0 2vw;
+    font-weight: bold;
+    background-color: var(--bg2);
+    transition: .05s;
+    color: var(--text-color1);
+    align-self: center;
+}
+
+#bugClose {
+    width: 4em;
+}
+
+#bugSubmit {
+    width: 4.7em;
+}
+
+#bugReporter button:hover {
+    border-color: var(--accent)
+}
+
+/*
+Styling of masterPassMenu
+*/
 
 #masterPassMenu {
     font-size: 1vw;
     display: flex;
     flex-direction: column;
-    position: absolute;
     top: 50%;
     left: 50%;
-    width: 50em;
-    background: var(--bg1);
+    width: 50vw;
+    height: 22vw;
+    transform: translate(-50%, -60%);
+    background: var(--bg2);
     padding: 3% 5%;
     border-radius: .5rem;
-    transform: translate(-50%, -50%);
     color: var(--text-color1);
 }
 
@@ -492,21 +733,11 @@ body.light {
     fill: var(--accent);
 }
 
-#masterPassMenu #why-link {
-    font-size: 1em;
-    margin-top: 2em;
-    align-self: center;
-}
-
-#masterPassMenu #why-link:hover {
-    color: var(--accent)
-}
-
 #masterPassMenu #submitMasterPass {
     border: 2px solid black;
     border-radius: 1rem;
     font-size: 2.1vw;
-    padding: 0 5vw;
+    padding: .2em 5vw;
     margin: 0 1vw;
     font-weight: bold;
     background-color: var(--bg2);
@@ -520,39 +751,32 @@ body.light {
     border-color: var(--accent)
 }
 
-@media (max-width: 1024px) {
-    #clumps {
-	font-size: 2vw;
-    }
-
-   #clumpEditor {
-	font-size: 1.5vw;
-    }
-}
-
+/*
+What to do if you're on mobile. Doesn't work very well
+*/
 @media (max-width: 480px) {
     #navbar {
-	height: var(--nav-thickness);
-	width: 100vw;
-	flex-direction: row;
+        height: var(--nav-thickness);
+        width: 100vw;
+        flex-direction: row;
     }
 
     #navbar .nav-top {
-	margin-left: .5em;
+        margin-left: .5em;
     }
 
     #navbar .nav-middle {
-	display: flex;
-	flex-direction: row;
+        display: flex;
+        flex-direction: row;
     }
 
     #navbar .nav-link {
-	width: 2.5em;
-	margin: 0;
+        width: 2.5em;
+        margin: 0;
     }
 
     #clumps {
-	margin-left: 0;
-	padding-top: calc(var(--nav-thickness) + 2em);
+        margin-left: 0;
+        padding-top: calc(var(--nav-thickness) + 2em);
     }
 }

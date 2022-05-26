@@ -36,6 +36,9 @@ func NewRouter() *mux.Router {
 	r.HandleFunc("/register", registerPostHandler).Methods("POST")
 	r.HandleFunc("/clumps", middleware.AuthRequired(clumpsGetHandler)).Methods("GET")
 	r.HandleFunc("/clumps", middleware.AuthRequired(clumpsPostHandler)).Methods("POST")
+	r.HandleFunc("/bug", middleware.AuthRequired(bugPostHandler)).Methods("POST")
+	r.HandleFunc("/elevate", middleware.AuthRequired(userElevateHandler)).Methods("GET")
+	r.HandleFunc("/privilage", middleware.AuthRequired(userGetPrivilageHandler)).Methods("GET")
 	r.HandleFunc("/lastUpdate", middleware.AuthRequired(lastUpdateHandler)).Methods("GET")
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 	return r
@@ -50,8 +53,8 @@ func lastUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	user := session.Values["user"].(*database.User)
 	lastUpdate, err := database.GetLastUpdateTime(user)
 	if err != nil {
-		fmt.Println(err)
-		//handle
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	json.NewEncoder(w).Encode(lastUpdate)
 }
@@ -65,13 +68,13 @@ func clumpsGetHandler(w http.ResponseWriter, r *http.Request) {
 	user := session.Values["user"].(*database.User)
 	clumps, err := database.RetrieveUserClumps(user)
 	if err != nil {
-		//handle error
-		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	time, err := database.GetLastUpdateTime(user)
 	if err != nil {
-		//handle error
-		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	packet := ClumpPacket{
 		Clumps: clumps,
@@ -91,30 +94,39 @@ func clumpsPostHandler(w http.ResponseWriter, r *http.Request) {
 	var packet ClumpPacket
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&packet)
-	err = database.ClearUserClumps(user)
-	if err != nil {
-		//handle error
-		fmt.Println(err)
+
+
+	privilaged, perr := database.Privilaged(user)
+	if perr != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	for i, clump := range packet.Clumps {
+	if !privilaged && len(packet.Clumps) > 5 {
+		http.Error(w, "privilage err: user cannot have more than 5 entries", http.StatusUnauthorized)
+		return
+	}
+
+	cerr := database.ClearUserClumps(user);
+	if cerr != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	for _, clump := range packet.Clumps {
 		clump.ClumpUser = user
-		clump.ClumpID = i
-		err := database.AddClump(*clump)
-		if err != nil {
-			//handle error
-			fmt.Println(err)
+		aerr := database.AddClump(*clump)
+		if aerr != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 	err = database.UpdateLastUpdateTime(user, packet.Time)
 	if err != nil {
-		//handle error
-		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	// database.ClearUserClumps(user)
-	// os.Exit(0)
 }
 
-func indexGetHandler(w http.ResponseWriter, r *http.Request) { //TODO: make golbal session variable and add manipulation functions to sessions directory
+func indexGetHandler(w http.ResponseWriter, r *http.Request) {
 	templates.Execute(w, "index.html", nil)
 }
 
@@ -164,6 +176,7 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//logout
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	//get session
 	session, err := sessions.Store.Get(r, "session")
@@ -182,6 +195,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	templates.Execute(w, "auth.html", nil)
 }
 
+
 func registerGetHandler(w http.ResponseWriter, r *http.Request) {
 	templates.Execute(w, "auth.html", nil)
 }
@@ -198,6 +212,58 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func userElevateHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := sessions.Store.Get(r, "session")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	user := session.Values["user"].(*database.User)
+	eerr := database.ElevateUser(user)
+	if eerr != nil {
+		http.Error(w, eerr.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func userGetPrivilageHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := sessions.Store.Get(r, "session")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	user := session.Values["user"].(*database.User)
+	privilage, perr := database.Privilaged(user)
+	if perr != nil {
+		fmt.Println(perr)
+		//handle
+	}
+	json.NewEncoder(w).Encode(privilage)
+}
+
+func bugPostHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := sessions.Store.Get(r, "session")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	user := session.Values["user"].(*database.User)
+
+	var bug database.Bug
+	decoder := json.NewDecoder(r.Body)
+	decoder.Decode(&bug)
+	bug.BugUser = user
+
+	berr := database.AddBug(bug)
+	if berr == database.ErrUserExists {
+		http.Error(w, berr.Error(), http.StatusUnauthorized)
+		return
+	} else if berr != nil {
+		http.Error(w, berr.Error(), http.StatusInternalServerError)
 		return
 	}
 }

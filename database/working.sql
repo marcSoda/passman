@@ -1,0 +1,29 @@
+DROP TABLE userData;
+DROP TABLE clumps;
+DROP TABLE bugs;
+
+CREATE TABLE userData (
+    userID INTEGER PRIMARY KEY AUTOINCREMENT,
+    userLogin VARCHAR(15) NOT NULL,
+    userHashedPassword VARCHAR(256) NOT NULL,
+    userLastUpdateTime INTEGER,
+    userPrivilaged BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE clumps (
+    clumpID INTEGER PRIMARY KEY AUTOINCREMENT,
+    clumpName VARCHAR(50) NOT NULL,
+    clumpLogin VARCHAR(15) NOT NULL,
+    clumpPassword VARCHAR(256) NOT NULL,
+    clumpURL VARCHAR(2048) NOT NULL,
+    clumpEmail VARCHAR(30) NOT NULL,
+    userID INTEGER NOT NULL,
+    FOREIGN KEY(userID) REFERENCES users(userID)
+);
+
+CREATE TABLE bugs (
+    bugID INTEGER PRIMARY KEY AUTOINCREMENT,
+    bug TEXT NOT NULL,
+    userID INTEGER NOT NULL,
+    FOREIGN KEY(userID) REFERENCES users(userID)
+)

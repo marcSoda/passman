@@ -5,11 +5,6 @@ import (
 	"strconv"
 )
 
-//NOTE: CLUMPS ARE NOT ADDED TO THE DATABASE DIRECTLY FROM THE CLIENT. CLUMPS ARE ADDED TO A "DATABASE" IN THE CLIENT AND THEN THE ENTIRE
-//CLIENT "DATABASE" IS DUMPED TO THE SERVER PERIODICALLY. THEREFORE THERE IS NO REASON WHY THE SERVER DB PK CAN'T BE CONCATINATED
-//WITH userID AND clientID WITH REPEATING clientIDs IN THE SERVER DB.
-
-//Clump is a Database Clump Entry TODO: fix/remove/add json tags
 type Clump struct {
 	ClumpUser     *User  `json:"user"`
 	ClumpID       int    `json:"id"`
@@ -25,7 +20,6 @@ var ErrClumpExists = fmt.Errorf("Clump already exists")
 
 //RetrieveUserClumps takes a user and returns a json file of the user's clumps
 func RetrieveUserClumps(user *User) ([]*Clump, error) {
-	// Get the user's hashed password. Will need to be scanned
 	clumpRows, err := db.Query(`
 		SELECT clumpID, clumpName, clumpURL, clumpLogin, clumpEmail, clumpPassword
 		FROM clumps
@@ -70,26 +64,23 @@ func AddClump(clump Clump) error {
 	if clumpExists {
 		return ErrClumpExists
 	}
-
-	//Since everything checks out, add the clump to the database
 	statement, err := db.Prepare(`
-		INSERT INTO clumps (userID, clumpID, clumpName, clumpURL, clumpLogin, clumpEmail, clumpPassword)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO clumps (userID, clumpName, clumpURL, clumpLogin, clumpEmail, clumpPassword)
+		VALUES (?, ?, ?, ?, ?, ?)
 	`)
 	if err != nil {
 		return err
 	}
-	_, sErr := statement.Exec(clump.ClumpUser.UserID, clump.ClumpID, clump.ClumpName, clump.ClumpURL, clump.ClumpLogin, clump.ClumpEmail, clump.ClumpPassword)
+	_, sErr := statement.Exec(clump.ClumpUser.UserID, clump.ClumpName, clump.ClumpURL, clump.ClumpLogin, clump.ClumpEmail, clump.ClumpPassword)
 	if sErr != nil {
 		return sErr
 	}
 	return nil
 }
 
-//clumpExistsInDB is used internally to determine if a clump exists in the clumps table. Returns true or false and an err.
-//this function will be removed later
+//clumpExistsInDB is used internally to determine if a clump exists in the clumps table.
 func clumpExistsInDB(clump Clump) (bool, error) {
-	//Result is 0 (is unique) or 1 (not unique). Note that result must later be scanned into a variable
+	//Result is 0 (is unique) or 1 (not unique).
 	result, err := db.Query(`
 		SELECT COUNT(1)
 			FROM clumps

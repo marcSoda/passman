@@ -3,11 +3,9 @@ package database
 import (
 	"errors"
 	"strconv"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
-//User contains all necessary data to create a user in the database TODO: fix/remove/add json tags
 type User struct {
 	UserID             int    `json:"id"`
 	UserLogin          string `json:"login"`
@@ -115,7 +113,6 @@ func getUserByLogin(login string) (*User, error) {
 }
 
 //AddUser takes a user struct. Returns nil if good, else returns error.
-//NOTE THAT UserIDs in the User struct are NOT used. The DB autoincrements UserIDs
 func AddUser(user User) error {
 	userExists, err := userExistsInDB(&user)
 	if err != nil {
@@ -139,10 +136,9 @@ func AddUser(user User) error {
 	return nil
 }
 
-//GetAllUsers returns an array of user structs encompasing every user in the database
+//GetAllUsers returns an array of user structs
 func GetAllUsers() ([]*User, error) {
 	var users []*User //read users into this slice of User
-	//Get all necessary user info for each user to fill the users array
 	userInfoRows, err := db.Query(`
 		SELECT userID, userLogin, userHashedPassword FROM userData
 	`)
@@ -164,9 +160,9 @@ func GetAllUsers() ([]*User, error) {
 	return users, err
 }
 
-//userExistsInDB is used internally to determine if a value exists in a table. Returns true or false.
+//userExistsInDB is used internally to determine if a user exists
 func userExistsInDB(user *User) (bool, error) {
-	//Result is 0 (is unique) or 1 (not unique). Note that result must later be scanned into a variable
+	//Result is 0 (is unique) or 1 (not unique).
 	result, err := db.Query(`
 		SELECT COUNT(1)
 			FROM userData
@@ -186,4 +182,41 @@ func userExistsInDB(user *User) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+//ElevateUser changes userPrivilaged to true. allows them to post more passwords than the "unpaid" limit
+func ElevateUser(user *User) error {
+	statement, err := db.Prepare(`
+        UPDATE userData
+			SET userPrivilaged = TRUE
+			WHERE userID = '` + strconv.Itoa(user.UserID) + `'
+	`)
+	if err != nil {
+		return err
+	}
+	_, serr := statement.Exec()
+	if serr != nil {
+		return serr
+	}
+	return nil
+}
+
+//Privilaged returns true if user is privilaged, false otherwise. also returns an err
+func Privilaged(user *User) (bool, error) {
+	//Result is 0 (is unique) or 1 (not unique).
+	result, err := db.Query(`
+		SELECT userPrivilaged
+			FROM userData
+			WHERE userID = '` + strconv.Itoa(user.UserID) + `'
+	`)
+	defer result.Close()
+	if err != nil {
+		return false, err
+	}
+	//scan the result into the res variable to be returned
+	var privilaged bool
+	for result.Next() {
+		result.Scan(&privilaged)
+	}
+	return privilaged, nil
 }
