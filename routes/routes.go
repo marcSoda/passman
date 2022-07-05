@@ -9,6 +9,7 @@ import (
 	"passman/middleware"
 	"passman/sessions"
 	"passman/templates"
+
 	"github.com/gorilla/mux"
 )
 
@@ -95,7 +96,6 @@ func clumpsPostHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&packet)
 
-
 	privilaged, perr := database.Privilaged(user)
 	if perr != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -106,7 +106,7 @@ func clumpsPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cerr := database.ClearUserClumps(user);
+	cerr := database.ClearUserClumps(user)
 	if cerr != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -194,7 +194,6 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	templates.Execute(w, "auth.html", nil)
 }
-
 
 func registerGetHandler(w http.ResponseWriter, r *http.Request) {
 	templates.Execute(w, "auth.html", nil)

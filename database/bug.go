@@ -1,9 +1,9 @@
 package database
 
 type Bug struct {
-	BugUser     *User  `json:"user"`
-	BugID       int    `json:"id"`
-	Bug         string `json:"bug"`
+	BugUser *User  `json:"user"`
+	BugID   int    `json:"id"`
+	Bug     string `json:"bug"`
 }
 
 //AddBug adds a clump to the database
